@@ -33,14 +33,15 @@ Specially, mocking existing( whether core or contributed ) modules will be very 
 	var assert = require('assert');
 
 	//do the hijacking
-	horaa.hijack('type', function() {
+	var osHoraa = horaa('os');
+	osHoraa.hijack('type', function() {
 		return 'linux';
 	});
 
 	assert.equal(lib.welcome(), 'this is a linux box');
 
 	//restore the method
-	horaa.restore('type');
+	osHoraa.restore('type');
 
 ## License
 

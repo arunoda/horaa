@@ -91,3 +91,22 @@ exports.testRestoreNotHijackedMethod = function(test) {
 
 	test.done();
 };
+
+exports.testWithoutObjectCreation = function(test) {
+	
+	var os = require('os');
+	var realValue = os.type();
+
+	var osHoraa = horaa('os');
+	horaa('os').hijack('type', function() {
+		return 'pissek';
+	});
+
+	test.ok(os.type() == 'pissek');
+
+	horaa('os').restore('type');
+
+	test.ok(os.type() == realValue);
+
+	test.done();
+};
