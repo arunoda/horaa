@@ -3,51 +3,51 @@ Horaa - Testing NodeJS Modules
 
 With the recent development of NodeJS many developers who has worked with other languages starting to love NodeJS. But when they do testing It'll be quite hard for them because of NodeJS's module system.
 
-Specially, mocking existing( whether core or contributed ) modules will be very tricky. But with *horaa* it's fun to do that.
+Specifically, mocking existing( whether core or contributed ) modules will be very tricky. But with *horaa* it's fun to do that.
 
 ## Install
 
-	npm install horaa
+  npm install horaa
 
 ## Example
 
 ### Your Code
-	
-	//stored in abc.js
-	exports.welcome = function() {
-		var os = require('os');
 
-		if(os.type() == 'linux') {
-			return 'this is a linux box';
-		} else {
-			return 'meka nam linux nemei :)';
-		}	
-	};
-	
+    //stored in abc.js
+    exports.welcome = function() {
+        var os = require('os');
+
+        if(os.type() == 'linux') {
+            return 'this is a linux box';
+        } else {
+            return 'meka nam linux nemei :)';
+        }
+    };
+
 
 ### Your Test Code (with horaa)
 
-	//stored in test.js
-	var horaa = require('horaa');
-	var lib = require('./abc'); // your code
-	var assert = require('assert');
+    //stored in test.js
+    var horaa = require('horaa');
+    var lib = require('./abc'); // your code
+    var assert = require('assert');
 
-	//do the hijacking
-	var osHoraa = horaa('os');
-	osHoraa.hijack('type', function() {
-		return 'linux';
-	});
+    //do the hijacking
+    var osHoraa = horaa('os');
+    osHoraa.hijack('type', function() {
+        return 'linux';
+    });
 
-	assert.equal(lib.welcome(), 'this is a linux box');
+    assert.equal(lib.welcome(), 'this is a linux box');
 
-	//restore the method
-	osHoraa.restore('type');
+    //restore the method
+    osHoraa.restore('type');
 
 ## Running Horaa's tests
 
-	npm install .
+    npm install .
 
-	make test
+    make test
 
 ## License
 

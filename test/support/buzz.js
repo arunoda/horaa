@@ -1,5 +1,5 @@
 module.exports = {
-  get: function(cb) {
-    cb(null, 'real buzz');
-  }
+    get: function(cb) {
+        cb(null, 'real buzz');
+    }
 };

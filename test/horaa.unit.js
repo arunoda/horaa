@@ -32,173 +32,173 @@ var buzz_path = path.join(__dirname, 'support/buzz.js');
 var foo = require(foo_path);
 
 describe('horaa', function() {
-  var realValue = os.type();
-  var osHoraa;
+    var realValue = os.type();
+    var osHoraa;
 
-  describe('methods without callbacks', function(done) {
-    beforeEach(function() {
-      osHoraa = horaa('os');
-      osHoraa.hijack('type', function() {
-        return 'fake_os';
-      });
+    describe('methods without callbacks', function(done) {
+        beforeEach(function() {
+            osHoraa = horaa('os');
+            osHoraa.hijack('type', function() {
+                return 'fake_os';
+            });
+        });
+
+        describe('hijack()', function() {
+            it('hijacked method returns replacement value', function() {
+                assert.ok(os.type() == 'fake_os');
+                osHoraa.restore('type');
+            });
+
+            describe("when method is hijacked twice", function() {
+                it('returns correct value each time', function() {
+                    assert.ok(os.type() == 'fake_os');
+
+                    osHoraa.hijack('type', function() {
+                        return 'fake_os2';
+                    });
+
+                    assert.ok(os.type() == 'fake_os2');
+
+                    osHoraa.restore('type');
+                    assert.ok(os.type() == realValue);
+                });
+            });
+
+            describe("when method doesn't exist", function() {
+                it('throws error', function() {
+                    assert.throws(function() {
+                        osHoraa.hijack('dsds', function() {});
+                    });
+                });
+            });
+
+            it('works without creating objects', function() {
+                horaa('os').hijack('type', function() {
+                    return 'fake_os';
+                });
+
+                assert.ok(os.type() == 'fake_os');
+
+                horaa('os').restore('type');
+                assert.ok(os.type() == realValue);
+            });
+        });
+
+        describe('restore()', function() {
+            it('restored method returns original value', function() {
+                osHoraa.restore('type');
+                assert.ok(os.type() == realValue);
+            });
+
+            describe('when restored method not hijacked', function() {
+                it('throws error', function() {
+                    assert.throws(function() {
+                        osHoraa.restore('dsds');
+                    });
+                });
+            });
+        });
     });
 
-    describe('hijack()', function() {
-      it('hijacked method returns replacement value', function() {
-        assert.ok(os.type() == 'fake_os');
-        osHoraa.restore('type');
-      });
+    describe('methods with callbacks', function(done) {
+        var real_file_size;
+        var fake_file_size = 99;
+        var fsHoraa;
 
-      describe("when method is hijacked twice", function() {
-        it('returns correct value each time', function() {
-          assert.ok(os.type() == 'fake_os');
+        describe('hijack()', function(done) {
+            beforeEach(function(done) {
+                fsHoraa = horaa('fs');
+                fs.stat(foo_path, function(err, file_stat) {
+                    real_file_size = file_stat.size;
 
-          osHoraa.hijack('type', function() {
-            return 'fake_os2';
-          });
+                    fsHoraa.hijack('stat', function(path, cb) {
+                        cb(null, {size: fake_file_size});
+                    });
 
-          assert.ok(os.type() == 'fake_os2');
+                    done();
+                });
+            });
 
-          osHoraa.restore('type');
-          assert.ok(os.type() == realValue);
+            it('hijacked method returns replacement value', function(done) {
+                fs.stat(foo_path, function(err, result) {
+                    assert.equal(result.size, fake_file_size);
+                    fsHoraa.restore('stat');
+                    done();
+                });
+            });
+
+            describe('restore()', function() {
+                it('restored method returns original value', function(done) {
+                    fsHoraa.restore('stat');
+                    fs.stat(foo_path, function(err, result) {
+                        assert.ok(result.size == real_file_size);
+                        done();
+                    });
+                });
+            });
         });
-      });
-
-      describe("when method doesn't exist", function() {
-        it('throws error', function() {
-          assert.throws(function() {
-            osHoraa.hijack('dsds', function() {});
-          });
-        });
-      });
-
-      it('works without creating objects', function() {
-        horaa('os').hijack('type', function() {
-          return 'fake_os';
-        });
-
-        assert.ok(os.type() == 'fake_os');
-
-        horaa('os').restore('type');
-        assert.ok(os.type() == realValue);
-      });
     });
 
-    describe('restore()', function() {
-      it('restored method returns original value', function() {
-        osHoraa.restore('type');
-        assert.ok(os.type() == realValue);
-      });
+    describe('requiring local module', function(done) {
+        var fooHoraa;
 
-      describe('when restored method not hijacked', function() {
-        it('throws error', function() {
-          assert.throws(function() {
-            osHoraa.restore('dsds');
-          });
+        describe('hijack()', function(done) {
+            beforeEach(function() {
+                fooHoraa = horaa(foo_path);
+                fooHoraa.hijack('bar', function(cb) {
+                    cb(null, 'fake bar');
+                });
+            });
+
+            it('hijacked method returns replacement value', function(done) {
+                foo.bar(function(err, result) {
+                    assert.equal(result, 'fake bar');
+                    fooHoraa.restore('bar');
+                    done();
+                });
+            });
+
+            describe('restore()', function() {
+                it('restored method returns original value', function(done) {
+                    fooHoraa.restore('bar');
+                    foo.bar(function(err, result) {
+                        assert.equal(result, 'real bar');
+                        done();
+                    });
+                });
+            });
         });
-      });
     });
-  });
 
-  describe('methods with callbacks', function(done) {
-    var real_file_size;
-    var fake_file_size = 99;
-    var fsHoraa;
+    // The support/foo.js file requires the support/buzz.js file.
+    describe('mocking local dependency', function(done) {
+        var buzzHoraa;
 
-    describe('hijack()', function(done) {
-      beforeEach(function(done) {
-        fsHoraa = horaa('fs');
-        fs.stat(foo_path, function(err, file_stat) {
-          real_file_size = file_stat.size;
+        describe('hijack()', function(done) {
+            beforeEach(function() {
+                buzzHoraa = horaa(buzz_path);
+                buzzHoraa.hijack('get', function(cb) {
+                    cb(null, 'fake buzz');
+                });
+            });
 
-          fsHoraa.hijack('stat', function(path, cb) {
-            cb(null, {size: fake_file_size});
-          });
+            it('hijacked method returns replacement value', function(done) {
+                foo.get_buzz(function(err, result) {
+                    assert.equal(result, 'fake buzz');
+                    buzzHoraa.restore('get');
+                    done();
+                });
+            });
 
-          done();
+            describe('restore()', function() {
+                it('restored method returns original value', function(done) {
+                    buzzHoraa.restore('get');
+                    foo.get_buzz(function(err, result) {
+                        assert.equal(result, 'real buzz');
+                        done();
+                    });
+                });
+            });
         });
-      });
-
-      it('hijacked method returns replacement value', function(done) {
-        fs.stat(foo_path, function(err, result) {
-          assert.equal(result.size, fake_file_size);
-          fsHoraa.restore('stat');
-          done();
-        });
-      });
-
-      describe('restore()', function() {
-        it('restored method returns original value', function(done) {
-          fsHoraa.restore('stat');
-          fs.stat(foo_path, function(err, result) {
-            assert.ok(result.size == real_file_size);
-            done();
-          });
-        });
-      });
     });
-  });
-
-  describe('requiring local module', function(done) {
-    var fooHoraa;
-
-    describe('hijack()', function(done) {
-      beforeEach(function() {
-        fooHoraa = horaa(foo_path);
-        fooHoraa.hijack('bar', function(cb) {
-          cb(null, 'fake bar');
-        });
-      });
-
-      it('hijacked method returns replacement value', function(done) {
-        foo.bar(function(err, result) {
-          assert.equal(result, 'fake bar');
-          fooHoraa.restore('bar');
-          done();
-        });
-      });
-
-      describe('restore()', function() {
-        it('restored method returns original value', function(done) {
-          fooHoraa.restore('bar');
-          foo.bar(function(err, result) {
-            assert.equal(result, 'real bar');
-            done();
-          });
-        });
-      });
-    });
-  });
-
-  // The support/foo.js file requires the support/buzz.js file.
-  describe('mocking local dependency', function(done) {
-    var buzzHoraa;
-
-    describe('hijack()', function(done) {
-      beforeEach(function() {
-        buzzHoraa = horaa(buzz_path);
-        buzzHoraa.hijack('get', function(cb) {
-          cb(null, 'fake buzz');
-        });
-      });
-
-      it('hijacked method returns replacement value', function(done) {
-        foo.get_buzz(function(err, result) {
-          assert.equal(result, 'fake buzz');
-          buzzHoraa.restore('get');
-          done();
-        });
-      });
-
-      describe('restore()', function() {
-        it('restored method returns original value', function(done) {
-          buzzHoraa.restore('get');
-          foo.get_buzz(function(err, result) {
-            assert.equal(result, 'real buzz');
-            done();
-          });
-        });
-      });
-    });
-  });
 });
