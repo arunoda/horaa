@@ -19,5 +19,9 @@
     {
         "type" : "git",
         "url" : "git@github.com:arunoda/horaa.git"
-    }
+    },
+
+		"devDependencies": {
+			"mocha": "0.7.1"
+		}
 }
