@@ -45,9 +45,9 @@ Specially, mocking existing( whether core or contributed ) modules will be very 
 
 ## Running Horaa's tests
 
-``npm install . ``
+	npm install .
 
-``make test``
+	make test
 
 ## License
 
