@@ -43,6 +43,12 @@ Specially, mocking existing( whether core or contributed ) modules will be very 
 	//restore the method
 	osHoraa.restore('type');
 
+## Running Horaa's tests
+
+``npm install . ``
+
+``make test``
+
 ## License
 
 The MIT License
