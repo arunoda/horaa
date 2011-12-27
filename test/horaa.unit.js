@@ -58,6 +58,7 @@ describe('horaa', function() {
                     });
 
                     assert.ok(os.type() == 'fake_os2');
+
                     osHoraa.restore('type');
                     assert.ok(os.type() == realValue);
                 });
@@ -79,7 +80,6 @@ describe('horaa', function() {
                 assert.ok(os.type() == 'fake_os');
 
                 horaa('os').restore('type');
-
                 assert.ok(os.type() == realValue);
             });
         });
