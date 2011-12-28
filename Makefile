@@ -10,4 +10,4 @@ lint:
 doc:
 	./node_modules/jsdoc/app/run.js -t=./node_modules/jsdoc/templates/jsdoc -d=./doc ./lib
 
-.PHONY: test
+.PHONY: test doc
