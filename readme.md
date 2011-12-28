@@ -49,6 +49,14 @@ Specifically, mocking existing( whether core or contributed ) modules will be ve
 
     make test
 
+## Linting
+
+    make lint
+
+## Docs
+
+    make doc
+
 ## License
 
 The MIT License
