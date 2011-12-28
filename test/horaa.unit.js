@@ -27,9 +27,9 @@ var horaa = require('../lib/horaa');
 var os = require('os');
 var fs = require('fs');
 var path = require('path');
-var foo_path = path.join(__dirname, 'support/foo.js');
-var buzz_path = path.join(__dirname, 'support/buzz.js');
-var foo = require(foo_path);
+var fooPath = path.join(__dirname, 'support/foo.js');
+var buzzPath = path.join(__dirname, 'support/buzz.js');
+var foo = require(fooPath);
 
 describe('horaa', function() {
     var realValue = os.type();
@@ -101,18 +101,18 @@ describe('horaa', function() {
     });
 
     describe('methods with callbacks', function(done) {
-        var real_file_size;
-        var fake_file_size = 99;
+        var realFileSize;
+        var fakeFileSize = 99;
         var fsHoraa;
 
         describe('hijack()', function(done) {
             beforeEach(function(done) {
                 fsHoraa = horaa('fs');
-                fs.stat(foo_path, function(err, file_stat) {
-                    real_file_size = file_stat.size;
+                fs.stat(fooPath, function(err, file_stat) {
+                    realFileSize = file_stat.size;
 
                     fsHoraa.hijack('stat', function(path, cb) {
-                        cb(null, {size: fake_file_size});
+                        cb(null, {size: fakeFileSize});
                     });
 
                     done();
@@ -120,8 +120,8 @@ describe('horaa', function() {
             });
 
             it('hijacked method returns replacement value', function(done) {
-                fs.stat(foo_path, function(err, result) {
-                    assert.equal(result.size, fake_file_size);
+                fs.stat(fooPath, function(err, result) {
+                    assert.equal(result.size, fakeFileSize);
                     fsHoraa.restore('stat');
                     done();
                 });
@@ -130,8 +130,8 @@ describe('horaa', function() {
             describe('restore()', function() {
                 it('restored method returns original value', function(done) {
                     fsHoraa.restore('stat');
-                    fs.stat(foo_path, function(err, result) {
-                        assert.ok(result.size == real_file_size);
+                    fs.stat(fooPath, function(err, result) {
+                        assert.ok(result.size == realFileSize);
                         done();
                     });
                 });
@@ -144,7 +144,7 @@ describe('horaa', function() {
 
         describe('hijack()', function(done) {
             beforeEach(function() {
-                fooHoraa = horaa(foo_path);
+                fooHoraa = horaa(fooPath);
                 fooHoraa.hijack('bar', function(cb) {
                     cb(null, 'fake bar');
                 });
@@ -176,14 +176,14 @@ describe('horaa', function() {
 
         describe('hijack()', function(done) {
             beforeEach(function() {
-                buzzHoraa = horaa(buzz_path);
+                buzzHoraa = horaa(buzzPath);
                 buzzHoraa.hijack('get', function(cb) {
                     cb(null, 'fake buzz');
                 });
             });
 
             it('hijacked method returns replacement value', function(done) {
-                foo.get_buzz(function(err, result) {
+                foo.getBuzz(function(err, result) {
                     assert.equal(result, 'fake buzz');
                     buzzHoraa.restore('get');
                     done();
@@ -193,7 +193,7 @@ describe('horaa', function() {
             describe('restore()', function() {
                 it('restored method returns original value', function(done) {
                     buzzHoraa.restore('get');
-                    foo.get_buzz(function(err, result) {
+                    foo.getBuzz(function(err, result) {
                         assert.equal(result, 'real buzz');
                         done();
                     });

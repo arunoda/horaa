@@ -5,7 +5,7 @@ module.exports = {
         cb(null, 'real bar');
     },
 
-    get_buzz: function(cb) {
+    getBuzz: function(cb) {
         buzz.get(function(err, result) {
             cb(err, result);
         });
